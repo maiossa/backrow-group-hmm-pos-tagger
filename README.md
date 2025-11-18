@@ -26,3 +26,8 @@ Placeholder text
 - German
 - Urdu
 - Gilaki
+<<<<<<< HEAD
+=======
+
+These datasets were selected because they differ in linguistic complexity (English vs. German), which is useful for evaluating the HMM POS tagger across languages.
+>>>>>>> af1682446c8e3ee63fc27f20d08cdbc3adaea619
