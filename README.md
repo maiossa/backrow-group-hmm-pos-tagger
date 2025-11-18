@@ -1,17 +1,28 @@
-# Backrow Group HMM POS Tagger
+# Parts of Speech tagging using a Hidden Markov Model (HMM)
 
-Implementation of a Hidden Markov Model (HMM) for Part-of-Speech tagging.  
-Experiments are performed on two Universal Dependencies datasets (English EWT and German GSD) to compare performance across languages.
+--------
+This repository is the result of a project we did as part of our computational syntax course, which is part of the syllabus of the Master in Language Analysis and Processing on EHU/UPV.
+--------
+
+## Objectives
+
+- Implement a Hidden Model for PoS tagging from scratch
+- Experiment on different languages  from the universal dependencies databank
+
+## What is POS tagging with HMMs? 
+
+Placeholder text
 
 ## Datasets
 
-This project uses two treebanks from the Universal Dependencies (UD) collection:
+Placeholder text
 
-- **English – EWT (English Web Treebank)**  
-  `UD_English-EWT`
-
-- **German – GSD (German Google Treebank)**  
-  `UD_German-GSD`
-
-These datasets were selected because they differ in linguistic complexity (English vs. German), which is useful for evaluating the HMM POS tagger across languages.
-check naeem
+- Czech
+- Slovak
+- English
+- Spanish
+- Persian
+- Arabic
+- German
+- Urdu
+- Gilaki
