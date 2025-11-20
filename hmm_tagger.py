@@ -1,24 +1,30 @@
-# src/hmm_tagger.py
 """
-hmm_tagger.py
-
 This module implements an HMM based POS-tagging-system.
-Currently only a skeleton.
 """
 
 from typing import List, Tuple, Dict
 
-
 class HMMTagger:
-    """
-    HHM POS-tagger
-    """
-
-    def __init__(self):
-        """
-        initializes the HMM
-        """
-        pass
+  
+    def __init__(self, alpha: float = 1e-2):
+        self.alpha = alpha
+        
+        # Mappings
+        self.tag2idx: Dict[str,int] = {}
+        self.idx2tag: Dict[int,str]= {}
+        self.word2idx: Dict[str,int] = {}
+        self.idx2word: Dict[int,str] = {}
+        
+        #Probability matrices
+        self.log_transition = None
+        self.log_emission = None
+        
+        #Sizes
+        self.T = 0 #tag count
+        self.V = 0 #vocabulary size (word count)
+        
+        self.start_tag = "<START>"
+        self.unk_word = "<UNK>"
 
     def train(self, tagged_sentences: List[List[Tuple[str, str]]]):
         """
