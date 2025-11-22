@@ -5,15 +5,15 @@
 BASE_DIR=data
 
 REPOS=(
-  UD_English-GUM
-  UD_Spanish-AnCora
-#   UD_Czech-CAC
-#   UD_Slovak-SNK
-#   UD_English-EWT
-#   UD_Persian-PerDT
-#   UD_Arabic-NYUAD
-#   UD_German-GSD
-#   UD_Urdu-UDTB
+    UD_English-GUM
+    UD_Spanish-AnCora
+    UD_Czech-CAC
+    UD_Slovak-SNK
+    UD_English-EWT
+    UD_Persian-PerDT
+    UD_Arabic-NYUAD
+    UD_German-GSD
+    UD_Urdu-UDTB
 )
 
 for repo in "${REPOS[@]}"; do
