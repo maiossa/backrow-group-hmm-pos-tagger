@@ -2,35 +2,39 @@
 
 # This script downloads the data from UD
 
-mkdir -p "./data/czech"
+BASE_DIR=data
 
-curl -L \
-  "https://raw.githubusercontent.com/UniversalDependencies/UD_Czech-CAC/master/cs_cac-ud-train.conllu" \
-  -o "./data/czech/cs_cac-ud-train.conllu"
+REPOS=(
+  UD_English-GUM
+  UD_Spanish-AnCora
+#   UD_Czech-CAC
+#   UD_Slovak-SNK
+#   UD_English-EWT
+#   UD_Persian-PerDT
+#   UD_Arabic-NYUAD
+#   UD_German-GSD
+#   UD_Urdu-UDTB
+)
 
+for repo in "${REPOS[@]}"; do
+    language=$(echo "$repo" | cut -d'_' -f2 | cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
+    treebank=$(echo "$repo" | cut -d'-' -f2 | tr '[:upper:]' '[:lower:]')
+    
+    echo "fetching $language ($treebank) ..."
 
-# Czech
-# https://github.com/UniversalDependencies/UD_Czech-CAC
+    DEST=$BASE_DIR/$language/$treebank
+    mkdir -p "$DEST"
 
-# Slovak
-# https://github.com/UniversalDependencies/UD_Slovak-SNK/tree/master
+    # list conllu files (train, test, dev)
+    FILES=$(curl -s "https://api.github.com/repos/UniversalDependencies/$repo/contents" \
+        | grep '"name": ".*conllu"' \
+        | cut -d'"' -f4)
 
-# English
-# https://github.com/UniversalDependencies/UD_English-GUM/tree/master
-
-# Spanish
-# https://github.com/UniversalDependencies/UD_Spanish-AnCora/tree/master
-
-# Persian
-# https://github.com/UniversalDependencies/UD_Persian-PerDT/tree/master
-
-# Arabic
-# https://github.com/UniversalDependencies/UD_Arabic-NYUAD/tree/master
-
-# German
-# https://github.com/UniversalDependencies/UD_German-GSD/tree/master
-
-# Urdu
-# https://github.com/UniversalDependencies/UD_Urdu-UDTB/tree/master
-
-
+    # download each file directly
+    for f in $FILES; do
+        URL="https://raw.githubusercontent.com/UniversalDependencies/$repo/master/$f"
+        filename="$DEST/$(echo "$f" | sed -E 's/.*-ud-//')"
+        curl -L "$URL" -o "$filename"
+        echo "  -> $f -> $filename"
+    done
+done
