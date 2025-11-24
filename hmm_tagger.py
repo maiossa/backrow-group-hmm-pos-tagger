@@ -3,7 +3,7 @@ This module implements an HMM based POS-tagging-system.
 """
 
 from typing import List, Tuple, Dict
-
+from process_data import get_data
 class HMMTagger:
   
     def __init__(self, alpha: float = 1e-2):
@@ -26,14 +26,92 @@ class HMMTagger:
         self.start_tag = "<START>"
         self.unk_word = "<UNK>"
 
-    def train(self, tagged_sentences: List[List[Tuple[str, str]]]):
-        """
-        trains HHM with labeled sentences
+    def train(self, training_data):
 
-        Args:
-            tagged_sentences (List[List[Tuple[str, str]]]): list of sentences. every sentence is a list of (word, tag) tuples.
-        """
-        pass
+        sentences = training_data
+        
+       # Define the transition matrix
+
+       ## Get the sequence of tags
+
+        tags = []
+
+        for sentence in sentences:
+
+            tags.append("START_TOKEN")
+
+            for token in sentence:
+        
+                tags.append(token["upos"])
+
+            tags.append("END_TOKEN")
+
+        ## Calculate the counts
+
+        post_ADJ = []
+        post_ADP = []
+        post_ADV = []
+        post_AUX = []
+        post_CCONJ = []
+        post_DET = []
+        post_INTJ = []
+        post_NOUN = []
+        post_PART = []
+        post_PRON = []
+        post_PROPN = []
+        post_PUNCT = []
+        post_SCONJ = []
+        post_SYM = []
+        post_VERB = []
+        post_X = []
+        post_START_TOKEN = []
+
+        index = -1
+
+        for tag in tags:
+            
+            index += 1
+
+            if tag == "ADJ":
+                post_ADJ.append(tags[index + 1])
+            if tag == "ADP":
+                post_ADP.append(tags[index + 1])
+             if tag == "ADV":
+                post_ADV.append(tags[index + 1])               
+            if tag == "AUX":
+                post_AUX.append(tags[index + 1])
+            if tag == "CCONJ":
+                post_CCONJ.append(tags[index + 1])
+            if tag == "DET":
+                post_DET.append(tags[index + 1])
+            if tag == "INTJ":
+                post_INTJ.append(tags[index + 1])
+            if tag == "NOUN":
+                post_NOUN.append(tags[index + 1])
+            if tag == "PART":
+                post_PART.append(tags[index + 1])
+            if tag == "PRON":
+                post_PRON.append(tags[index + 1])
+            if tag == "PROPN":
+                post_PROPN.append(tags[index + 1])
+            if tag == "PUNCT":
+                post_PUNCT.append(tags[index + 1])
+            if tag == "SCONJ":
+                post_SCONJ.append(tags[index + 1])
+            if tag == "SYM":
+                post_SYM.append(tags[index + 1])
+            if tag == "VERB":
+                post_VERB.append(tags[index + 1])
+            if tag == "X":
+                post_X.append(tags[index + 1])
+            if tag == "START_TOKEN":
+                post_START_TOKEN.append(tags[index + 1])
+
+        # WHAT IS MISSING RIGHT NOW
+        # 1) calculate the rows of the transition matrix from the post_SOMETHING variables defined above
+        # 2) calculate the emission matrix
+
+        return transition_matrix, emission_matrix
 
     def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
         """
@@ -64,3 +142,21 @@ class HMMTagger:
             filepath (str): model path
         """
         pass
+
+##################################
+
+sentences = get_data("data/english/gum/train.conllu")
+
+tags = []
+
+for sentence in sentences:
+
+    tags.append("START_TOKEN")
+
+    for token in sentence:
+        
+        tags.append(token["upos"])
+
+    tags.append("END_TOKEN")
+
+
