@@ -32,6 +32,9 @@ class HMMTagger:
         self.start_tag = "<START>"
         self.unk_word = "<UNK>"
 
+        self.transition_matrix = None
+        self.emission_matrix = None
+
     def train(self, training_data: list[TokenList], pd_return=False):
         """
         train the HMM and fill emission and transition matrixes
@@ -126,6 +129,9 @@ class HMMTagger:
         if not pd_return:
             emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
 
+        # store matrixes
+        self.transition_matrix, self.emission_matrix = transition_matrix, emission_matrix
+
         return transition_matrix, emission_matrix
     
 
@@ -141,6 +147,7 @@ class HMMTagger:
         """
         pass
 
+
     def save_model(self, filepath: str):
         """
         saves the trained model
@@ -148,7 +155,15 @@ class HMMTagger:
         Args:
             filepath (str): model path
         """
-        pass
+
+        # ensure correct file extension
+        if not filepath.endswith(".npz"):
+            filepath += ".npz"
+
+        np.savez(filepath,
+            transition=self.transition_matrix,
+            emission=self.emission_matrix)
+
 
     def load_model(self, filepath: str):
         """
@@ -157,12 +172,22 @@ class HMMTagger:
         Args:
             filepath (str): model path
         """
-        pass
+
+        # ensure correct file extension
+        if not filepath.endswith(".npz"):
+            filepath += ".npz"
+
+        data = np.load(filepath, allow_pickle=True)
+        self.transition_matrix = data["transition"]
+        self.emission_matrix = data["emission"]
+        return self
 
 ##################################
 
-sentences = get_data("data/english/gum/train.conllu")
+if __name__ == '__main__':
 
-tagger = HMMTagger()
+    sentences = get_data("data/english/gum/train.conllu")
 
-print(tagger.train(sentences))
+    tagger = HMMTagger()
+
+    print(tagger.train(sentences))
