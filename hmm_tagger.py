@@ -3,6 +3,8 @@ This module implements an HMM based POS-tagging-system.
 """
 
 from typing import List, Tuple, Dict
+
+from conllu import TokenList
 from process_data import get_data
 from collections import Counter
 import numpy as np
@@ -30,7 +32,22 @@ class HMMTagger:
         self.start_tag = "<START>"
         self.unk_word = "<UNK>"
 
-    def train(self, training_data):
+    def train(self, training_data: list[TokenList]):
+        """
+        train the HMM and fill emission and transition matrixes
+
+        args:
+            training_data (list[TokenList]): Parsed sentences.
+                Each token in a TokenList provides:
+                - token["form"] → surface word
+                - token["upos"] → universal POS tag
+                These are used to build transition and emission counts.
+
+        returns:
+            tuple[np.ndarray, np.ndarray]:
+                - transition_matrix: P(tag_next | tag_current)
+                - emission_matrix:  P(word | tag)
+        """
 
         sentences = training_data
         
