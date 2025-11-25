@@ -56,7 +56,7 @@ class HMMTagger:
 
         for sentence in sentences:
 
-            tags.append("START_TOKEN")
+            tags.append("START")
             tokens.append("START_TOKEN")
 
             for token in sentence:
@@ -64,7 +64,7 @@ class HMMTagger:
                 tags.append(token["upos"])
                 tokens.append(token["form"])
 
-            tags.append("END_TOKEN")
+            tags.append("END")
             tokens.append("END_TOKEN")
 
         # Define the transition matrix ######################
@@ -86,7 +86,7 @@ class HMMTagger:
             prob_dist = {k: v / len(next_tags) for k, v in tag_counter.items()}
             transition_data[tag] = prob_dist
 
-        transition_data["END_TOKEN"] = {}
+        transition_data["END"] = {}
     
         transition_matrix = pd.DataFrame(transition_data).T
         transition_matrix = transition_matrix.fillna(0) # Take this version for a more human-readeable output
