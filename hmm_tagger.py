@@ -36,8 +36,6 @@ class HMMTagger:
         
        # Define the transition matrix
 
-       ## Get the sequence of tags
-
         tags = []
 
         for sentence in sentences:
@@ -49,124 +47,34 @@ class HMMTagger:
                 tags.append(token["upos"])
 
             tags.append("END_TOKEN")
-
-        ## Calculate the counts
-
-        post_ADJ = []
-        post_ADP = []
-        post_ADV = []
-        post_AUX = []
-        post_CCONJ = []
-        post_DET = []
-        post_INTJ = []
-        post_NOUN = []
-        post_PART = []
-        post_PRON = []
-        post_PROPN = []
-        post_PUNCT = []
-        post_SCONJ = []
-        post_SYM = []
-        post_VERB = []
-        post_X = []
-        post_START_TOKEN = []
-
-        index = -1
-
-        for tag in tags:
             
-            index += 1
+            
+        transition_counts = {}
 
-            if tag == "ADJ":
-                post_ADJ.append(tags[index + 1])
-            if tag == "ADP":
-                post_ADP.append(tags[index + 1])
-            if tag == "ADV":
-                post_ADV.append(tags[index + 1])               
-            if tag == "AUX":
-                post_AUX.append(tags[index + 1])
-            if tag == "CCONJ":
-                post_CCONJ.append(tags[index + 1])
-            if tag == "DET":
-                post_DET.append(tags[index + 1])
-            if tag == "INTJ":
-                post_INTJ.append(tags[index + 1])
-            if tag == "NOUN":
-                post_NOUN.append(tags[index + 1])
-            if tag == "PART":
-                post_PART.append(tags[index + 1])
-            if tag == "PRON":
-                post_PRON.append(tags[index + 1])
-            if tag == "PROPN":
-                post_PROPN.append(tags[index + 1])
-            if tag == "PUNCT":
-                post_PUNCT.append(tags[index + 1])
-            if tag == "SCONJ":
-                post_SCONJ.append(tags[index + 1])
-            if tag == "SYM":
-                post_SYM.append(tags[index + 1])
-            if tag == "VERB":
-                post_VERB.append(tags[index + 1])
-            if tag == "X":
-                post_X.append(tags[index + 1])
-            if tag == "START_TOKEN":
-                post_START_TOKEN.append(tags[index + 1])
+        for i in range(len(tags) - 1):
+            current_tag = tags[i]
+            next_tag = tags[i + 1]
 
-        def get_prob_dist(variable):
-            prob_dist = Counter(variable)
+            if current_tag not in transition_counts:
+                transition_counts[current_tag] = []
 
-            for key, value in prob_dist.items():
-                prob_dist[key] = value / len(variable)
+            transition_counts[current_tag].append(next_tag)
 
-            return prob_dist
 
-        # Define transform the counts into probability distributuons
-        transition_data = {
-                "post_ADJ": get_prob_dist(post_ADJ),
+        transition_data = {}
+        for tag, next_tags in transition_counts.items():
+            tag_counter = Counter(next_tags)
+            prob_dist = {k: v / len(next_tags) for k, v in tag_counter.items()}
+            transition_data[tag] = prob_dist
 
-                "post_ADP": get_prob_dist(post_ADP),
-
-                "post_ADV": get_prob_dist(post_ADV),
-
-                "post_AUX": get_prob_dist(post_AUX),
-
-                "post_CCONJ": get_prob_dist(post_CCONJ),
-
-                "post_DET": get_prob_dist(post_DET),
-
-                "post_INTJ": get_prob_dist(post_INTJ),
-
-                "post_NOUN": get_prob_dist(post_NOUN),
-
-                "post_PART": get_prob_dist(post_PART),
-
-                "post_PRON": get_prob_dist(post_PRON),
-
-                "post_PROPN": get_prob_dist(post_PROPN),
-
-                "post_PUNCT": get_prob_dist(post_PUNCT),
-
-                "post_SCONJ": get_prob_dist(post_SCONJ),
-
-                "post_SYM": get_prob_dist(post_SYM),
-
-                "post_VERB": get_prob_dist(post_VERB),
-
-                "post_X": get_prob_dist(post_X),
-
-                "post_START_TOKEN": get_prob_dist(post_START_TOKEN),
-
-                "post_END_TOKEN": {}  
-
-                }
-
+        transition_data["END_TOKEN"] = {}
+    
         transition_matrix = pd.DataFrame(transition_data).T
+        transition_matrix = transition_matrix.fillna(0) # take this version for a more human-readeable output
 
-        transition_matrix = transition_matrix.fillna(0)
-        
-        # WHAT IS MISSING RIGHT NOW
+        transition_matrix = transition_matrix.to_numpy # but this should be faster when it comes to processing
+                # WHAT IS MISSING RIGHT NOW
         # calculate the emission matrix
-        # the matrices should be in numpy, not pandas
-        # the way I obtain the transition matrix is straight up atrocious, needs refactoring
         emission_matrix = "PLACEHOLDER"
         return transition_matrix, emission_matrix
 
