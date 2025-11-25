@@ -95,11 +95,9 @@ class HMMTagger:
         transition_data["END"] = {}
     
         transition_matrix = pd.DataFrame(transition_data).T
-        
-        if pd_return:
-            # Take this version for a more human-readeable output:
-            transition_matrix = transition_matrix.fillna(0) 
-        else:
+        # Take this version for a more human-readeable output:
+        transition_matrix = transition_matrix.fillna(0) 
+        if not pd_return:
             # But this should be faster when it comes to processing:
             transition_matrix = transition_matrix.to_numpy 
 
@@ -124,10 +122,8 @@ class HMMTagger:
             emission_data[token] = prob_dist
 
         emission_matrix = pd.DataFrame(emission_data)
-
-        if pd_return:
-            emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
-        else:
+        emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
+        if not pd_return:
             emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
 
         return transition_matrix, emission_matrix
