@@ -34,20 +34,23 @@ class HMMTagger:
 
         sentences = training_data
         
-       # Define the transition matrix
-
         tags = []
+        tokens = []
 
         for sentence in sentences:
 
             tags.append("START_TOKEN")
+            tokens.append("START_TOKEN")
 
             for token in sentence:
         
                 tags.append(token["upos"])
+                tokens.append(token["form"])
 
             tags.append("END_TOKEN")
-            
+            tokens.append("END_TOKEN")
+
+        # Define the transition matrix ######################
             
         transition_counts = {}
 
@@ -60,7 +63,6 @@ class HMMTagger:
 
             transition_counts[current_tag].append(next_tag)
 
-
         transition_data = {}
         for tag, next_tags in transition_counts.items():
             tag_counter = Counter(next_tags)
@@ -70,12 +72,35 @@ class HMMTagger:
         transition_data["END_TOKEN"] = {}
     
         transition_matrix = pd.DataFrame(transition_data).T
-        transition_matrix = transition_matrix.fillna(0) # take this version for a more human-readeable output
+        transition_matrix = transition_matrix.fillna(0) # Take this version for a more human-readeable output
 
-        transition_matrix = transition_matrix.to_numpy # but this should be faster when it comes to processing
-                # WHAT IS MISSING RIGHT NOW
-        # calculate the emission matrix
-        emission_matrix = "PLACEHOLDER"
+        transition_matrix = transition_matrix.to_numpy # But this should be faster when it comes to processing
+
+
+        # Define the emission matrix ######################
+        
+        emission_counts = {}
+
+        for i in range(len(tokens)):
+            current_tag = tags[i]
+            current_token = tokens[i]
+
+            if current_token not in emission_counts:
+                emission_counts[current_token] = []
+
+            emission_counts[current_token].append(current_tag)
+
+        emission_data = {}
+        for token, tags in emission_counts.items():
+            tag_counter = Counter(tags)
+            prob_dist = {k: v / len(tags) for k, v in tag_counter.items()}
+            emission_data[token] = prob_dist
+
+        emission_matrix = pd.DataFrame(emission_data)
+        emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
+
+        emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
+
         return transition_matrix, emission_matrix
 
     def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
