@@ -32,7 +32,7 @@ class HMMTagger:
         self.start_tag = "<START>"
         self.unk_word = "<UNK>"
 
-    def train(self, training_data: list[TokenList]):
+    def train(self, training_data: list[TokenList], pd_return=False):
         """
         train the HMM and fill emission and transition matrixes
 
@@ -43,6 +43,8 @@ class HMMTagger:
                 - token["upos"] → universal POS tag
                 These are used to build transition and emission counts.
 
+            pd_return (Bool): return matrixes in a human readable pandas dataset format
+        
         returns:
             tuple[np.ndarray, np.ndarray]:
                 - transition_matrix: P(tag_next | tag_current)
@@ -51,6 +53,7 @@ class HMMTagger:
 
         sentences = training_data
         
+        # flatten sentences into lists of tokens and tags
         tags = []
         tokens = []
 
@@ -60,8 +63,9 @@ class HMMTagger:
             tokens.append("START_TOKEN")
 
             for token in sentence:
-        
+                # upos: Universal POS tags
                 tags.append(token["upos"])
+                # form: the word
                 tokens.append(token["form"])
 
             tags.append("END")
@@ -80,18 +84,24 @@ class HMMTagger:
 
             transition_counts[current_tag].append(next_tag)
 
+        # normalize counts to create a normaized distribution
         transition_data = {}
         for tag, next_tags in transition_counts.items():
             tag_counter = Counter(next_tags)
             prob_dist = {k: v / len(next_tags) for k, v in tag_counter.items()}
             transition_data[tag] = prob_dist
 
+        # making sure an end token stays the ending token.
         transition_data["END"] = {}
     
         transition_matrix = pd.DataFrame(transition_data).T
-        transition_matrix = transition_matrix.fillna(0) # Take this version for a more human-readeable output
-
-        transition_matrix = transition_matrix.to_numpy # But this should be faster when it comes to processing
+        
+        if pd_return:
+            # Take this version for a more human-readeable output:
+            transition_matrix = transition_matrix.fillna(0) 
+        else:
+            # But this should be faster when it comes to processing:
+            transition_matrix = transition_matrix.to_numpy 
 
 
         # Define the emission matrix ######################
@@ -114,11 +124,14 @@ class HMMTagger:
             emission_data[token] = prob_dist
 
         emission_matrix = pd.DataFrame(emission_data)
-        emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
 
-        emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
+        if pd_return:
+            emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
+        else:
+            emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
 
         return transition_matrix, emission_matrix
+    
 
     def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
         """
