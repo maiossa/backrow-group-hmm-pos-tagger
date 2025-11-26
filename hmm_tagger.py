@@ -102,7 +102,7 @@ class HMMTagger:
         transition_matrix = transition_matrix.fillna(0) 
         if not pd_return:
             # But this should be faster when it comes to processing:
-            transition_matrix = transition_matrix.to_numpy 
+            transition_matrix = transition_matrix.to_numpy()
 
 
         # Define the emission matrix ######################
@@ -127,7 +127,7 @@ class HMMTagger:
         emission_matrix = pd.DataFrame(emission_data)
         emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
         if not pd_return:
-            emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
+            emission_matrix = emission_matrix.to_numpy() # But this should be faster when it comes to processing
 
         # store matrixes
         self.transition_matrix, self.emission_matrix = transition_matrix, emission_matrix
@@ -145,6 +145,8 @@ class HMMTagger:
         Returns:
             List[Tuple[str, str]]: list of (words, tag) tuples
         """
+
+
         pass
 
 
