@@ -6,12 +6,18 @@ from typing import List, Tuple, Dict
 
 from conllu import TokenList
 from process_data import get_data
-from collections import Counter
+from collections import Counter, defaultdict
 import numpy as np
 import pandas as pd
 
+START_TAG = "START"
+START_TOKEN = "START_TOKEN"
+END_TAG = "END"
+END_TOKEN = "END_TOKEN"
+UNK_TOKEN = "UNK"
+
 class HMMTagger:
-  
+
     def __init__(self, alpha: float = 1e-2):
         self.alpha = alpha
         
@@ -28,12 +34,13 @@ class HMMTagger:
         #Sizes
         self.T = 0 #tag count
         self.V = 0 #vocabulary size (word count)
-        
-        self.start_tag = "<START>"
-        self.unk_word = "<UNK>"
 
-        self.transition_matrix = None
-        self.emission_matrix = None
+        self.transition_matrix: np.ndarray = None
+        self.emission_matrix: np.ndarray = None
+
+        self.transition_df: pd.DataFrame = None
+        self.emission_df: pd.DataFrame = None
+
 
     def train(self, training_data: list[TokenList], pd_return=False):
         """
@@ -62,8 +69,8 @@ class HMMTagger:
 
         for sentence in sentences:
 
-            tags.append("START")
-            tokens.append("START_TOKEN")
+            tags.append(START_TAG)
+            tokens.append(START_TOKEN)
 
             for token in sentence:
                 # upos: Universal POS tags
@@ -71,8 +78,16 @@ class HMMTagger:
                 # form: the word
                 tokens.append(token["form"])
 
-            tags.append("END")
-            tokens.append("END_TOKEN")
+            tags.append(END_TAG)
+            tokens.append(END_TOKEN)
+
+
+        # replace less frequent words with unk tokens
+        token_counts = dict(Counter(tokens))
+        unk_threshold = 2
+        for i, token in enumerate(tokens):
+            if token_counts[tokens] <= unk_threshold:
+                tokens[i] = UNK_TOKEN
 
         # Define the transition matrix ######################
             
@@ -95,17 +110,15 @@ class HMMTagger:
             transition_data[tag] = prob_dist
 
         # making sure an end token stays the ending token.
-        transition_data["END"] = {}
+        transition_data[END_TAG] = {}
     
+        # Take this pandas version for a more human-readeable output:
         transition_matrix = pd.DataFrame(transition_data).T
-        # Take this version for a more human-readeable output:
         transition_matrix = transition_matrix.fillna(0) 
-        if not pd_return:
-            # But this should be faster when it comes to processing:
-            transition_matrix = transition_matrix.to_numpy 
 
 
         # Define the emission matrix ######################
+        
         
         emission_counts = {}
 
@@ -126,12 +139,35 @@ class HMMTagger:
 
         emission_matrix = pd.DataFrame(emission_data)
         emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
+        
+
+        # tag order to be used to sort dataframe columns and rows
+        tag_order = sorted(transition_matrix.index)
+        tag_order.remove(START_TAG)
+        tag_order.remove(END_TAG)
+        tag_order += [START_TAG, END_TAG]
+
+        # reorder tags
+        transition_matrix = transition_matrix.reindex(index=tag_order, columns=tag_order)
+        emission_matrix = emission_matrix.reindex(index=tag_order)
+
+        self.transition_df = transition_matrix
+        self.emission_df = emission_matrix
+
+        self.transition_matrix = transition_matrix.to_numpy()
+        self.emission_matrix = emission_matrix.to_numpy()
+
+        self.tag2idx = { tag: i for i, tag in enumerate(transition_matrix.index)}
+        self.idx2tag = list(transition_matrix.index)
+
+        self.word2idx = {tag: i for i, tag in enumerate(emission_matrix.columns)}
+        self.idx2word = list(emission_matrix.columns)
+
+
         if not pd_return:
-            emission_matrix = emission_matrix.to_numpy # But this should be faster when it comes to processing
-
-        # store matrixes
-        self.transition_matrix, self.emission_matrix = transition_matrix, emission_matrix
-
+            # return numpy matrices
+            return self.transition_matrix, self.emission_matrix
+   
         return transition_matrix, emission_matrix
     
 
@@ -145,7 +181,13 @@ class HMMTagger:
         Returns:
             List[Tuple[str, str]]: list of (words, tag) tuples
         """
-        pass
+
+        from viterbi import ViterbiDecoder
+
+        # replace unseen words with unk
+        sentence = {token if token in self.word2idx else UNK_TOKEN for token in sentence}
+
+        return ViterbiDecoder(self).tag(sentence)
 
 
     def save_model(self, filepath: str):
