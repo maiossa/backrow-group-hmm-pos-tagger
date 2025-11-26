@@ -98,9 +98,12 @@ class HMMTagger:
         transition_data["END"] = {}
     
         transition_matrix = pd.DataFrame(transition_data).T
-        # Take this version for a more human-readeable output:
+        # Take this pandas version for a more human-readeable output:
         transition_matrix = transition_matrix.fillna(0) 
+
         if not pd_return:
+            self.tag2idx = { tag: i for i, tag in enumerate(transition_matrix.index)}
+            self.idx2tag = list(transition_matrix.index)
             # But this should be faster when it comes to processing:
             transition_matrix = transition_matrix.to_numpy()
 
@@ -127,6 +130,8 @@ class HMMTagger:
         emission_matrix = pd.DataFrame(emission_data)
         emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
         if not pd_return:
+            self.word2idx = {tag: i for i, tag in enumerate(emission_matrix.columns)}
+            self.idx2word = list(emission_matrix.columns)
             emission_matrix = emission_matrix.to_numpy() # But this should be faster when it comes to processing
 
         # store matrixes
