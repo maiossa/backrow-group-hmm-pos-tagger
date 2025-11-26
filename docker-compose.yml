@@ -1,0 +1,15 @@
+version: '3'
+services:
+  dev:
+    image: dev_hmm_2526
+    container_name: dev_hmm2526_c
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "6894:6894"
+    volumes:
+      - ./:/src
+    # environment:
+      # - env_var=env_value
+      #

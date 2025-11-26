@@ -1,3 +1,5 @@
-conllu
-numpy
-pandas
+conllu==6.0.0
+numpy==2.3.5
+pandas==2.3.3
+nltk==3.9.2
+marimo==0.18.1
