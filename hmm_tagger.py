@@ -74,6 +74,7 @@ class HMMTagger:
             tags.append("END")
             tokens.append("END_TOKEN")
 
+
         # Define the transition matrix ######################
             
         transition_counts = {}
@@ -97,15 +98,9 @@ class HMMTagger:
         # making sure an end token stays the ending token.
         transition_data["END"] = {}
     
-        transition_matrix = pd.DataFrame(transition_data).T
         # Take this pandas version for a more human-readeable output:
+        transition_matrix = pd.DataFrame(transition_data).T
         transition_matrix = transition_matrix.fillna(0) 
-
-        if not pd_return:
-            self.tag2idx = { tag: i for i, tag in enumerate(transition_matrix.index)}
-            self.idx2tag = list(transition_matrix.index)
-            # But this should be faster when it comes to processing:
-            transition_matrix = transition_matrix.to_numpy()
 
 
         # Define the emission matrix ######################
@@ -129,14 +124,32 @@ class HMMTagger:
 
         emission_matrix = pd.DataFrame(emission_data)
         emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
+        
+
+        # tag order to be used to sort dataframe columns and rows
+        tag_order = sorted(transition_matrix.index)
+        tag_order.remove('START')
+        tag_order.remove('END')
+        tag_order += ['START', 'END']
+
+        # reorder tags
+        transition_matrix = transition_matrix.reindex(index=tag_order, columns=tag_order)
+        emission_matrix = emission_matrix.reindex(index=tag_order)
+
+        self.transition_matrix = transition_matrix.to_numpy()
+        self.emission_matrix = emission_matrix.to_numpy()
+
+        self.tag2idx = { tag: i for i, tag in enumerate(transition_matrix.index)}
+        self.idx2tag = list(transition_matrix.index)
+
+        self.word2idx = {tag: i for i, tag in enumerate(emission_matrix.columns)}
+        self.idx2word = list(emission_matrix.columns)
+
+
         if not pd_return:
-            self.word2idx = {tag: i for i, tag in enumerate(emission_matrix.columns)}
-            self.idx2word = list(emission_matrix.columns)
-            emission_matrix = emission_matrix.to_numpy() # But this should be faster when it comes to processing
-
-        # store matrixes
-        self.transition_matrix, self.emission_matrix = transition_matrix, emission_matrix
-
+            # return numpy matrices
+            return self.transition_matrix, self.emission_matrix
+   
         return transition_matrix, emission_matrix
     
 
