@@ -187,6 +187,38 @@ class HMMTagger:
         # replace unseen words with unk
         sentence = {token if token in self.word2idx else UNK_TOKEN for token in sentence}
 
+        ####################################
+        # <PSEUDOCODE>
+        ####################################
+
+        # Add a START_TOKEN (with tag) to the beginning of the input
+        # Add a END_TOKEN (with tag) to the end of the input
+
+        # Create a new table which should have:
+            # one column for each token in the sequence
+            # one row for each possible tag
+            # START and END tokens should be already tagged with a 100% certainty
+
+        # For every column (Except the START and END TOKENS)
+            # For every cell in that column
+
+                # Create an empty dictionary for the probabilities
+
+                # For i in every possible tag
+
+                    # Get the probability of the current row tag being the correct one, given that the previous tag is i (That is, the probability of the previous tag being i times the probability of this row tag following i)
+
+                    # Get the probability of the current row tag being the correct one, given the token.
+                    # Multiply them and save that into the dictionary
+
+                # Take the highest probability in the dictionary and save that for this cell. This is the probability of the row tag being correct
+
+
+        # Once the table is finished pick the best probability in each column. That row is the predicted tag for each token. 
+
+        ####################################
+        # <\PSEUDOCODE>
+        ####################################
         return ViterbiDecoder(self).tag(sentence)
 
 
