@@ -86,7 +86,7 @@ class HMMTagger:
         token_counts = dict(Counter(tokens))
         unk_threshold = 2
         for i, token in enumerate(tokens):
-            if token_counts[tokens] <= unk_threshold:
+            if token_counts[token] <= unk_threshold:
                 tokens[i] = UNK_TOKEN
 
         # Define the transition matrix ######################
@@ -185,7 +185,7 @@ class HMMTagger:
         from viterbi import ViterbiDecoder
 
         # replace unseen words with unk
-        sentence = {token if token in self.word2idx else UNK_TOKEN for token in sentence}
+        sentence = [token if token in self.word2idx else UNK_TOKEN for token in sentence]
 
         return ViterbiDecoder(self).tag(sentence)
 
