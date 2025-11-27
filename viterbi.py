@@ -14,15 +14,9 @@ class ViterbiDecoder:
     self.word2idx = hmm_tagger.word2idx
     self.idx2word = hmm_tagger.idx2word
 
-    # convert probability matrices to log space for numerical stability
-    self._prepare_log_probabilities()
-  
-  def _prepare_log_probabilities(self):
-    epsilon = 1e-10
-
-    # convert to log probabilities
-    self.log_transition = np.log(self.tagger.transition_matrix + epsilon)
-    self.log_emission = np.log(self.tagger.emission_matrix + epsilon)
+    # Use log probabilities from the trained tagger
+    self.log_transition = hmm_tagger.log_transition
+    self.log_emission = hmm_tagger.log_emission
 
   def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
     if not sentence:
@@ -34,7 +28,7 @@ class ViterbiDecoder:
       if word in self.word2idx:
         word_indices.append(self.word2idx[word])
       else:
-        # this should happen if preprocessing was done correctly
+        # this should not happen if preprocessing was done correctly
         word_indices.append(self.word2idx.get(UNK_TOKEN, 0))
     
     #run viterbi algorithm
