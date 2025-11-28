@@ -222,6 +222,46 @@ class HMMTagger:
         return ViterbiDecoder(self).tag(sentence)
 
 
+    def test(self, testing_data: list[TokenList]):
+
+        ####################################
+        # <PSEUDOCODE>
+        ####################################
+
+        
+        # Tag the sentences using the tag() function
+        # Save the prediction
+
+        # predicted = tag(testing_data[sentences])
+        # real = testing_data[real_tags]
+
+        # Make sure that these are in the exact same format
+        # Until I have the the tag() function ready, I won't make any assumptions about what that will be
+        # Therefore, this is all pseudocode for now
+
+        # acurracy = mean(predicted == target)
+
+        # sentence_level_accuracy = []
+
+        # for sentence in sentences:
+            # sentence_level_accuracy.append[predicted[sentence] == real[sentence]]
+
+        # sentence_level_accuracy = mean(sentence_level_accuracy)
+
+        # taggs_f1 = {} 
+        
+        # for tag in tags:
+            # taggs_f1[tag] = get_f1
+    
+        ####################################
+        # <\PSEUDOCODE>
+        ####################################
+
+
+
+        return 
+
+
     def save_model(self, filepath: str):
         """
         saves the trained model
