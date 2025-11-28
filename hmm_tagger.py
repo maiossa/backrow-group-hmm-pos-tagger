@@ -20,7 +20,7 @@ class HMMTagger:
 
     def __init__(self, alpha: float = 1e-2):
         self.alpha = alpha
-        
+        print("hell1o")
         # Mappings
         self.tag2idx: Dict[str,int] = {}
         self.idx2tag: Dict[int,str]= {}
@@ -86,7 +86,7 @@ class HMMTagger:
         token_counts = dict(Counter(tokens))
         unk_threshold = 2
         for i, token in enumerate(tokens):
-            if token_counts[tokens] <= unk_threshold:
+            if token_counts[token] <= unk_threshold:
                 tokens[i] = UNK_TOKEN
 
         # Define the transition matrix ######################
@@ -102,12 +102,22 @@ class HMMTagger:
 
             transition_counts[current_tag].append(next_tag)
 
-        # normalize counts to create a normaized distribution
+        #  compute transition probabilities using Laplace smoothing
         transition_data = {}
-        for tag, next_tags in transition_counts.items():
+        all_tags = sorted(set(tags))
+
+        for tag in all_tags:
+            transition_data[tag] = {}
+            next_tags = transition_counts.get(tag, [])
+           # how many times this tag appeared as previous
+            total_count = len(next_tags)
+
             tag_counter = Counter(next_tags)
-            prob_dist = {k: v / len(next_tags) for k, v in tag_counter.items()}
-            transition_data[tag] = prob_dist
+
+            for nxt in all_tags:
+                raw = tag_counter[nxt]
+                smoothed = (raw + self.alpha) / (total_count + self.alpha * len(all_tags))
+                transition_data[tag][nxt] = smoothed
 
         # making sure an end token stays the ending token.
         transition_data[END_TAG] = {}
@@ -131,11 +141,21 @@ class HMMTagger:
 
             emission_counts[current_token].append(current_tag)
 
+        #  compute emission probabilities using Laplace smoothing
         emission_data = {}
-        for token, tags in emission_counts.items():
-            tag_counter = Counter(tags)
-            prob_dist = {k: v / len(tags) for k, v in tag_counter.items()}
-            emission_data[token] = prob_dist
+        vocab = sorted(set(tokens))
+
+        for token, tag_list in emission_counts.items():
+
+            tag_counter = Counter(tag_list)
+            total_count = len(tag_list)
+
+            for tag in all_tags:
+                raw = tag_counter[tag]
+                smoothed = (raw + self.alpha) / (total_count + self.alpha * len(vocab))
+                if tag not in emission_data:
+                    emission_data[tag] = {}
+                emission_data[tag][token] = smoothed
 
         emission_matrix = pd.DataFrame(emission_data)
         emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
