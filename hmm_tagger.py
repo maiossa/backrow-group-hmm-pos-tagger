@@ -9,6 +9,7 @@ from process_data import get_data
 from collections import Counter, defaultdict
 import numpy as np
 import pandas as pd
+import re
 
 START_TAG = "START"
 START_TOKEN = "START_TOKEN"
@@ -49,7 +50,7 @@ class HMMTagger:
             training_data (list[TokenList]): Parsed sentences.
                 Each token in a TokenList provides:
                 - token["form"] → surface word
-                - token["upos"] → universal POS tag
+                - token["upos"] → universal dependencies POS tag
             pd_return (bool): Return matrices in pandas DataFrame format
 
         Returns:
@@ -76,11 +77,15 @@ class HMMTagger:
 
         # Replace less frequent words with UNK tokens
         token_counts = Counter(tokens)
-        unk_threshold = 2
-        
+        unk_threshold = 1
+       
         for i, token in enumerate(tokens):
             if token_counts[token] <= unk_threshold:
                 tokens[i] = UNK_TOKEN
+
+        ####################
+        # Maybe we should mask at random
+        ####################
 
         # Build transition matrix
         transition_counts = defaultdict(list)
@@ -162,58 +167,96 @@ class HMMTagger:
         
         return self.transition_matrix, self.emission_matrix
        
-
     def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
         """
-        taggs a sentence of words with POS-tags
+        Tags a sentence of words with POS-tags using Viterbi algorithm.
 
         Args:
             sentence (List[str]): list of words
 
         Returns:
-            List[Tuple[str, str]]: list of (words, tag) tuples
+            List[Tuple[str, str]]: list of (word, tag) tuples
         """
 
-        from viterbi import ViterbiDecoder
+        # If the input is a string
+        if isinstance(sentence, str):
+            sentence = re.findall(r'\w+|[^\w\s]', sentence)
 
-        # replace unseen words with unk
-        sentence = {token if token in self.word2idx else UNK_TOKEN for token in sentence}
+        # If the input is in UD format
+        if isinstance(sentence, TokenList):
 
-        ####################################
-        # <PSEUDOCODE>
-        ####################################
+            tokens = []
 
-        # Add a START_TOKEN (with tag) to the beginning of the input
-        # Add a END_TOKEN (with tag) to the end of the input
+            for token in sentence:
+                tokens.append(token["form"])
 
-        # Create a new table which should have:
-            # one column for each token in the sequence
-            # one row for each possible tag
-            # START and END tokens should be already tagged with a 100% certainty
+            sentence = tokens
 
-        # For every column (Except the START and END TOKENS)
-            # For every cell in that column
-
-                # Create an empty dictionary for the probabilities
-
-                # For i in every possible tag
-
-                    # Get the probability of the current row tag being the correct one, given that the previous tag is i (That is, the probability of the previous tag being i times the probability of this row tag following i)
-
-                    # Get the probability of the current row tag being the correct one, given the token.
-                    # Multiply them and save that into the dictionary
-
-                # Take the highest probability in the dictionary and save that for this cell. This is the probability of the row tag being correct
-
-
-        # Once the table is finished pick the best probability in each column. That row is the predicted tag for each token. 
-
-        ####################################
-        # <\PSEUDOCODE>
-        ####################################
-        return ViterbiDecoder(self).tag(sentence)
-
-
+        # Replace unseen words with UNK
+        sentence = [token if token in self.word2idx else UNK_TOKEN for token in sentence]
+        
+        # Add START and END tokens
+        sentence = [START_TOKEN] + sentence + [END_TOKEN]
+        n_tokens = len(sentence)
+        
+        # Define the table
+        viterbi = np.zeros((self.T, n_tokens))
+        backpointer = np.zeros((self.T, n_tokens), dtype=int)
+        
+        start_idx = self.tag2idx[START_TAG]
+        viterbi[start_idx, 0] = 1.0
+        
+        # Fill it in
+        for t in range(1, n_tokens):
+            token = sentence[t]
+            token_idx = self.word2idx.get(token, self.word2idx.get(UNK_TOKEN))
+            
+            for curr_tag_idx in range(self.T):
+                max_prob = -np.inf
+                best_prev_tag = 0
+                
+                for prev_tag_idx in range(self.T):
+                    # Transition probability: P(curr_tag | prev_tag)
+                    trans_prob = self.transition_matrix[prev_tag_idx, curr_tag_idx]
+                    
+                    # Emission probability: P(token | curr_tag)
+                    emis_prob = self.emission_matrix[curr_tag_idx, token_idx]
+                    
+                    # Total probability
+                    prob = viterbi[prev_tag_idx, t-1] * trans_prob * emis_prob
+                    
+                    if prob > max_prob:
+                        max_prob = prob
+                        best_prev_tag = prev_tag_idx
+                
+                viterbi[curr_tag_idx, t] = max_prob
+                backpointer[curr_tag_idx, t] = best_prev_tag
+        
+        # Backward pass: backtrack to find the best path
+        best_path = []
+        
+        # Start from END token
+        end_idx = self.tag2idx[END_TAG]
+        best_path.append(end_idx)
+        
+        # Backtrack through the sequence
+        for t in range(n_tokens - 1, 0, -1):
+            prev_tag_idx = backpointer[best_path[-1], t]
+            best_path.append(prev_tag_idx)
+        
+        # Reverse to get correct order and convert to tag names
+        best_path.reverse()
+        predicted_tags = [self.idx2tag[idx] for idx in best_path]
+        
+        # Remove START and END tokens and pair with original words
+        result = []
+        for i in range(1, len(sentence) - 1):  # Skip START and END
+            original_word = sentence[i]
+            predicted_tag = predicted_tags[i]
+            result.append((original_word, predicted_tag))
+        
+        return result
+        
     def test(self, testing_data: list[TokenList]):
 
         ####################################
@@ -248,8 +291,6 @@ class HMMTagger:
         ####################################
         # <\PSEUDOCODE>
         ####################################
-
-
 
         return 
 
@@ -293,7 +334,10 @@ class HMMTagger:
 if __name__ == '__main__':
 
     sentences = get_data("data/english/gum/train.conllu")
-
     tagger = HMMTagger()
 
-    print(tagger.train(sentences, pd_return = True))
+    tagger.train(sentences)
+
+    #print(tagger.tag("Alright, this should work now."))
+    print(sentences[2])
+    print(tagger.tag(sentences[2]))
