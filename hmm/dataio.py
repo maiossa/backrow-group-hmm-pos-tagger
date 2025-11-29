@@ -1,6 +1,7 @@
 from conllu import parse
 
-def get_data(path):
+
+def load_treebank(path):
     """
     load a CoNLL-U file and return its sentences.
 
