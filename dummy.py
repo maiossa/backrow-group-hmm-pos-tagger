@@ -40,3 +40,29 @@ def generate_dummy_test_sentences():
     s3 = [("the", "DET"), ("dog", "NOUN"), ("barks", "VERB"), ("a", "DET"), ("dog", "NOUN")]
 
     return [s1, s2, s3]
+
+
+def dummy_tagger():
+    from hmm_tagger import HMMTagger
+    tags, vocab, transition, emission, T, V = generate_dummy_hmm()
+    tagger = HMMTagger(transition, emission, vocab, tags)
+    return tagger
+    
+
+def dummy_decoder():
+    from viterbi import ViterbiDecoder
+    tagger = dummy_tagger()
+    viterbi = ViterbiDecoder(tagger)
+    return viterbi
+    
+    
+def test_viterbi(sentence_id=0):
+    test_data = generate_dummy_test_sentences()
+    sentence = test_data[sentence_id]
+    words = [word for word,_ in sentence]
+    tags = [tag for _,tag in sentence]
+    return words, tags
+    # input = test_data[]
+    # viterbi.tag(test_data[0])
+
+print(test_viterbi())
