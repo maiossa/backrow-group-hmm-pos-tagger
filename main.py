@@ -1,13 +1,13 @@
-from process_data import get_data
-from hmm_tagger import HMMTagger
+from hmm.dataio import load_treebank
+from hmm.model import HMMTagger
 
 if __name__ != '__main__':
     quit(0)
 
-sentences = get_data("data/english/gum/dev.conllu")
-tagger = HMMTagger()
-tagger.train(sentences)
-tagger.save_model('model')
 
-tagger = tagger.load_model('model')
-print(tagger.transition_matrix)
+train_sentences = load_treebank("data/english/gum/train.conllu")
+tagger = HMMTagger()
+tagger.train(train_sentences)
+
+test_sentences =  load_treebank("data/english/gum/test.conllu")
+print(tagger.evaluate(test_sentences))
