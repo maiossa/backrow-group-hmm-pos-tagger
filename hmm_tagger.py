@@ -207,7 +207,79 @@ class HMMTagger:
         # replace unseen words with unk
         sentence = {token if token in self.word2idx else UNK_TOKEN for token in sentence}
 
+        ####################################
+        # <PSEUDOCODE>
+        ####################################
+
+        # Add a START_TOKEN (with tag) to the beginning of the input
+        # Add a END_TOKEN (with tag) to the end of the input
+
+        # Create a new table which should have:
+            # one column for each token in the sequence
+            # one row for each possible tag
+            # START and END tokens should be already tagged with a 100% certainty
+
+        # For every column (Except the START and END TOKENS)
+            # For every cell in that column
+
+                # Create an empty dictionary for the probabilities
+
+                # For i in every possible tag
+
+                    # Get the probability of the current row tag being the correct one, given that the previous tag is i (That is, the probability of the previous tag being i times the probability of this row tag following i)
+
+                    # Get the probability of the current row tag being the correct one, given the token.
+                    # Multiply them and save that into the dictionary
+
+                # Take the highest probability in the dictionary and save that for this cell. This is the probability of the row tag being correct
+
+
+        # Once the table is finished pick the best probability in each column. That row is the predicted tag for each token. 
+
+        ####################################
+        # <\PSEUDOCODE>
+        ####################################
         return ViterbiDecoder(self).tag(sentence)
+
+
+    def test(self, testing_data: list[TokenList]):
+
+        ####################################
+        # <PSEUDOCODE>
+        ####################################
+
+        
+        # Tag the sentences using the tag() function
+        # Save the prediction
+
+        # predicted = tag(testing_data[sentences])
+        # real = testing_data[real_tags]
+
+        # Make sure that these are in the exact same format
+        # Until I have the the tag() function ready, I won't make any assumptions about what that will be
+        # Therefore, this is all pseudocode for now
+
+        # acurracy = mean(predicted == target)
+
+        # sentence_level_accuracy = []
+
+        # for sentence in sentences:
+            # sentence_level_accuracy.append[predicted[sentence] == real[sentence]]
+
+        # sentence_level_accuracy = mean(sentence_level_accuracy)
+
+        # taggs_f1 = {} 
+        
+        # for tag in tags:
+            # taggs_f1[tag] = get_f1
+    
+        ####################################
+        # <\PSEUDOCODE>
+        ####################################
+
+
+
+        return 
 
 
     def save_model(self, filepath: str):
