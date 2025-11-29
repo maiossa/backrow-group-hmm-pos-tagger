@@ -144,7 +144,8 @@ class HMMTagger:
         #  compute emission probabilities using Laplace smoothing
         emission_data = {}
         vocab = sorted(set(tokens))
-
+        # if UNK_TOKEN not in vocab:
+        #     vocab.append(UNK_TOKEN)
         for token, tag_list in emission_counts.items():
 
             tag_counter = Counter(tag_list)
@@ -157,9 +158,10 @@ class HMMTagger:
                     emission_data[tag] = {}
                 emission_data[tag][token] = smoothed
 
-        emission_matrix = pd.DataFrame(emission_data)
+        emission_matrix = pd.DataFrame(emission_data).T  # add .T to avoid END every time issue / bug fix
         emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
-        
+        if UNK_TOKEN not in emission_matrix.columns:
+            emission_matrix[UNK_TOKEN] = 1e-9
 
         # tag order to be used to sort dataframe columns and rows
         tag_order = sorted(transition_matrix.index)
@@ -179,7 +181,7 @@ class HMMTagger:
 
         self.tag2idx = { tag: i for i, tag in enumerate(transition_matrix.index)}
         self.idx2tag = list(transition_matrix.index)
-
+ 
         self.word2idx = {tag: i for i, tag in enumerate(emission_matrix.columns)}
         self.idx2word = list(emission_matrix.columns)
 
@@ -205,7 +207,7 @@ class HMMTagger:
         from viterbi import ViterbiDecoder
 
         # replace unseen words with unk
-        sentence = {token if token in self.word2idx else UNK_TOKEN for token in sentence}
+        sentence = [token if token in self.word2idx else UNK_TOKEN for token in sentence]
 
         ####################################
         # <PSEUDOCODE>
