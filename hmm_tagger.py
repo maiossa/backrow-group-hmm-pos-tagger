@@ -41,135 +41,127 @@ class HMMTagger:
         self.transition_df: pd.DataFrame = None
         self.emission_df: pd.DataFrame = None
 
-
     def train(self, training_data: list[TokenList], pd_return=False):
         """
-        train the HMM and fill emission and transition matrixes
+        Train the HMM and fill emission and transition matrices.
 
-        args:
+        Args:
             training_data (list[TokenList]): Parsed sentences.
                 Each token in a TokenList provides:
                 - token["form"] → surface word
                 - token["upos"] → universal POS tag
-                These are used to build transition and emission counts.
+            pd_return (bool): Return matrices in pandas DataFrame format
 
-            pd_return (Bool): return matrixes in a human readable pandas dataset format
-        
-        returns:
-            tuple[np.ndarray, np.ndarray]:
+        Returns:
+            tuple[np.ndarray, np.ndarray] or tuple[pd.DataFrame, pd.DataFrame]:
                 - transition_matrix: P(tag_next | tag_current)
-                - emission_matrix:  P(word | tag)
+                - emission_matrix: P(word | tag)
         """
-
         sentences = training_data
         
-        # flatten sentences into lists of tokens and tags
+        # Flatten sentences into lists of tokens and tags
         tags = []
         tokens = []
 
         for sentence in sentences:
-
             tags.append(START_TAG)
             tokens.append(START_TOKEN)
 
             for token in sentence:
-                # upos: Universal POS tags
                 tags.append(token["upos"])
-                # form: the word
                 tokens.append(token["form"])
 
             tags.append(END_TAG)
             tokens.append(END_TOKEN)
 
-
-        # replace less frequent words with unk tokens
-        token_counts = dict(Counter(tokens))
+        # Replace less frequent words with UNK tokens
+        token_counts = Counter(tokens)
         unk_threshold = 2
+        
         for i, token in enumerate(tokens):
-            if token_counts[tokens] <= unk_threshold:
+            if token_counts[token] <= unk_threshold:
                 tokens[i] = UNK_TOKEN
 
-        # Define the transition matrix ######################
-            
-        transition_counts = {}
-
+        # Build transition matrix
+        transition_counts = defaultdict(list)
+        
         for i in range(len(tags) - 1):
             current_tag = tags[i]
             next_tag = tags[i + 1]
-
-            if current_tag not in transition_counts:
-                transition_counts[current_tag] = []
-
             transition_counts[current_tag].append(next_tag)
 
-        # normalize counts to create a normaized distribution
+        # Normalize counts to create probability distribution
         transition_data = {}
         for tag, next_tags in transition_counts.items():
             tag_counter = Counter(next_tags)
-            prob_dist = {k: v / len(next_tags) for k, v in tag_counter.items()}
+            total = len(next_tags)
+            prob_dist = {k: v / total for k, v in tag_counter.items()}
             transition_data[tag] = prob_dist
 
-        # making sure an end token stays the ending token.
+        # Ensure END_TAG doesn't transition anywhere
         transition_data[END_TAG] = {}
-    
-        # Take this pandas version for a more human-readeable output:
+
+        # Create transition DataFrame
         transition_matrix = pd.DataFrame(transition_data).T
-        transition_matrix = transition_matrix.fillna(0) 
+        transition_matrix = transition_matrix.fillna(0)
 
-
-        # Define the emission matrix ######################
+        # Build emission matrix
+        emission_counts = defaultdict(list)
         
-        
-        emission_counts = {}
-
         for i in range(len(tokens)):
             current_tag = tags[i]
             current_token = tokens[i]
-
-            if current_token not in emission_counts:
-                emission_counts[current_token] = []
-
             emission_counts[current_token].append(current_tag)
 
+        # Normalize counts to create probability distribution
         emission_data = {}
-        for token, tags in emission_counts.items():
-            tag_counter = Counter(tags)
-            prob_dist = {k: v / len(tags) for k, v in tag_counter.items()}
+        for token, tag_list in emission_counts.items():
+            tag_counter = Counter(tag_list)
+            total = len(tag_list)
+            prob_dist = {k: v / total for k, v in tag_counter.items()}
             emission_data[token] = prob_dist
 
         emission_matrix = pd.DataFrame(emission_data)
-        emission_matrix = emission_matrix.fillna(0) # Take this version for a more human-readeable output
-        
+        emission_matrix = emission_matrix.fillna(0)
 
-        # tag order to be used to sort dataframe columns and rows
+        # Create consistent tag ordering
         tag_order = sorted(transition_matrix.index)
         tag_order.remove(START_TAG)
         tag_order.remove(END_TAG)
-        tag_order += [START_TAG, END_TAG]
+        tag_order = tag_order + [START_TAG, END_TAG]
 
-        # reorder tags
-        transition_matrix = transition_matrix.reindex(index=tag_order, columns=tag_order)
-        emission_matrix = emission_matrix.reindex(index=tag_order)
+        # Reorder matrices
+        transition_matrix = transition_matrix.reindex(index=tag_order, columns=tag_order, fill_value=0)
+        emission_matrix = emission_matrix.reindex(index=tag_order, fill_value=0)
 
+        # Store DataFrames
         self.transition_df = transition_matrix
         self.emission_df = emission_matrix
 
+        # Convert to numpy arrays
         self.transition_matrix = transition_matrix.to_numpy()
         self.emission_matrix = emission_matrix.to_numpy()
 
-        self.tag2idx = { tag: i for i, tag in enumerate(transition_matrix.index)}
-        self.idx2tag = list(transition_matrix.index)
-
-        self.word2idx = {tag: i for i, tag in enumerate(emission_matrix.columns)}
+        # Build vocabulary mappings
+        self.tag2idx = {tag: i for i, tag in enumerate(tag_order)}
+        self.idx2tag = tag_order
+        
+        self.word2idx = {word: i for i, word in enumerate(emission_matrix.columns)}
         self.idx2word = list(emission_matrix.columns)
+        
+        # Store sizes
+        self.T = len(self.tag2idx)
+        self.V = len(self.word2idx)
 
+        # Compute log probabilities with smoothing
+        self.log_transition = np.log(self.transition_matrix + self.alpha)
+        self.log_emission = np.log(self.emission_matrix + self.alpha)
 
-        if not pd_return:
-            # return numpy matrices
-            return self.transition_matrix, self.emission_matrix
-   
-        return transition_matrix, emission_matrix
-    
+        if pd_return:
+            return transition_matrix, emission_matrix
+        
+        return self.transition_matrix, self.emission_matrix
+       
 
     def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
         """
@@ -304,4 +296,4 @@ if __name__ == '__main__':
 
     tagger = HMMTagger()
 
-    print(tagger.train(sentences))
+    print(tagger.train(sentences, pd_return = True))
