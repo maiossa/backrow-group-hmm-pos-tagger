@@ -37,13 +37,6 @@ Assuming you are on Linux, to simply test the code, clone the repo and run:
 ```sh
 chmod +x scripts/download_data.sh
 ./scripts/download_data.sh
-- Czech
-- Slovak
-- English
-- Spanish
-- Persian
-- German
-- Urdu
 
 python main.py
 # Or python3, but you probably know which one you need to use
