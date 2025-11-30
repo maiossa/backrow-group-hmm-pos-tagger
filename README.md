@@ -24,7 +24,6 @@ Placeholder text
 - English
 - Spanish
 - Persian
-- Arabic
 - German
 - Urdu
 - Gilaki
