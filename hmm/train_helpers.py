@@ -1,10 +1,11 @@
 from collections import Counter, defaultdict
 import pandas as pd
+import random
 
 from .tokens import START_TOKEN, END_TOKEN, START_TAG, END_TAG, UNK_TOKEN
 
 
-def extract_tokens_tags(sentences):
+def extract_tokens_tags(sentences, mask_rate = 0.0):
     # Flatten sentences into lists of tokens and tags
     tags = []
     tokens = []
@@ -15,7 +16,11 @@ def extract_tokens_tags(sentences):
 
         for token in sentence:
             tags.append(token["upos"])
-            tokens.append(token["form"])
+
+            if mask_rate > 0 and random.random() < mask_rate:
+                tokens.append(UNK_TOKEN)
+            else:
+                tokens.append(token["form"])
 
         tags.append(END_TAG)
         tokens.append(END_TOKEN)
