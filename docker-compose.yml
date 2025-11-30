@@ -10,6 +10,5 @@ services:
       - "6894:6894"
     volumes:
       - ./:/src
-    # environment:
-      # - env_var=env_value
-      #
+      - /root/.config/marimo
+
