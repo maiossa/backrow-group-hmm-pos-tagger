@@ -1,4 +1,4 @@
-from conllu import parse_incr
+from conllu import parse_incr, parse
 
 
 def lazy_load_treebank(path):
@@ -6,16 +6,17 @@ def lazy_load_treebank(path):
     fields= ["id", "form", "upos"]
 
     with open(path, "r", encoding="utf8") as f:
-        # using generators and selected fields to make loading much faster 
-        for sent in parse_incr(f, fields=fields):
-            
-            yield sent
-            # yield [
-            #     {key: token[key] for key in ['upos', 'form']} for token in sent
-            # ]
+        for sentence in parse_incr(f, fields=fields):
+            yield sentence
 
 
-def load_treebank(path):
+def load_treebank_in_ram(path):
+    with open(path, "r", encoding="utf8") as f:
+        data = f.read()
+        return parse(data, fields=["id", "form", "upos"])
+
+
+def load_treebank(path, parse_incrementally=False):
     """
     load a CoNLL-U file and return its sentences.
 
@@ -26,5 +27,7 @@ def load_treebank(path):
         list[TokenList]: parsed sentences from the Universal Dependencies dataset.
     """
 
-    return lazy_load_treebank(path)
+    if parse_incrementally:
+        return lazy_load_treebank(path)
     
+    return load_treebank_in_ram(path)
