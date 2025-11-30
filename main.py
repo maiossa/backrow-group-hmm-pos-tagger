@@ -7,7 +7,7 @@ if __name__ != '__main__':
 
 train_sentences = load_treebank("data/english/gum/train.conllu")
 tagger = HMMTagger()
-tagger.train(train_sentences)
+tagger.train(train_sentences, mask_rate =0.01)
 
 test_sentences =  load_treebank("data/english/gum/test.conllu")
 print(tagger.evaluate(test_sentences))

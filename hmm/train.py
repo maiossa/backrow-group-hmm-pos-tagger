@@ -8,11 +8,11 @@ from .train_helpers import (
 import numpy as np
 
 
-def build_hmm_parameters(training_data):
+def build_hmm_parameters(training_data, mask_rate = 0.0):
     sentences = training_data
 
     # Extract tags and tokens
-    tags, words = extract_tokens_tags(sentences)
+    tags, words = extract_tokens_tags(sentences, mask_rate = mask_rate)
 
     # Replace rare
     words = replace_rare_tokens(words, threshold=1)
@@ -55,9 +55,9 @@ def _assign_parameters(hmm, transition_df, emission_df, tags, words):
     hmm.log_emission   = np.log(hmm.emission_matrix + hmm.alpha)
 
 
-def train_hmm(hmm, training_data, pd_return=False):
+def train_hmm(hmm, training_data, pd_return=False, mask_rate = 0.0):
     transition_df, emission_df, tags, words = \
-        build_hmm_parameters(training_data)
+        build_hmm_parameters(training_data, mask_rate = mask_rate)
 
     _assign_parameters(hmm, transition_df, emission_df, tags, words)
 

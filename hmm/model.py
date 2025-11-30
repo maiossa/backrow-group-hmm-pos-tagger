@@ -35,7 +35,7 @@ class HMMTagger():
         )
 
 
-    def train(self, training_data: list[TokenList], pd_return=False):
+    def train(self, training_data: list[TokenList], pd_return=False, mask_rate = 0.0):
         """
         Train the HMM and fill emission and transition matrices.
 
@@ -52,7 +52,7 @@ class HMMTagger():
                 - emission_matrix: P(word | tag)
         """
 
-        return train_hmm(self, training_data, pd_return)
+        return train_hmm(self, training_data, pd_return, mask_rate)
     
 
     def tag(self, sentence: List[str]) -> List[Tuple[str, str]]:
