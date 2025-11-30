@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # This script downloads the data from UD
 
