@@ -36,7 +36,7 @@ For comparison, since there are 17 tags in the UD system, the chance of getting 
 Assuming you are on Linux, to simply test the code, clone the repo and run:
 
 ```sh
-chmod +x 01_download_data.sh
+chmod +x scripts/download_data.sh
 ./scripts/download_data.sh
 - Czech
 - Slovak
