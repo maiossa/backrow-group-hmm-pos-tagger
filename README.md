@@ -44,7 +44,6 @@ chmod +x scripts/download_data.sh
 - Persian
 - German
 - Urdu
-- Gilaki
 
 python main.py
 # Or python3, but you probably know which one you need to use
