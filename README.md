@@ -27,7 +27,6 @@ The objective of this project was to implement Part of Speech tagging from scrat
 	- English - 89.1%
 	- German - 88.5%
 	- Slovak - 72.35%
-	- Arabic - 29.1%
 
 For comparison, since there are 17 tags in the UD system, the chance of getting the correct one by random chance is about 5.8%.
 
