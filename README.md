@@ -75,7 +75,7 @@ result = tagger.tag("This mode is awesome!")
 print(result)
 ```
 
-## Libraries used
+## Libraries used for the model
 
 - Collections
 - Conllu
