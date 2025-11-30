@@ -2,47 +2,83 @@
 
 --------
 
-This repository is the result of a project we did as part of our computational syntax course, which is part of the syllabus of the Master in Language Analysis and Processing on EHU/UPV.
+This repository is the result of a project we did as part of our computational syntax course, which is part of the syllabus of the [Master in Language Analysis and Processing on EHU/UPV](https://www.ehu.eus/en/web/master/master-language-analysis-processing). 
+
+The objective of this project was to implement Part of Speech tagging from scratch using a Hidden Markov Model and experiment on said model. The use of high level machine learning libraries was obviously forbidden.
 
 --------
 
-## Objectives
+## Achievements of this project
 
-- Implement a Hidden Model for PoS tagging from scratch
-- Experiment on different languages  from the universal dependencies databank
+### Manual implementation of:
 
-## What is POS tagging with HMMs? 
+- Full HMM training loop
+- Viterbi algorithm for tagging
+- Evaluation loop (accuracy, macro&micro F1)
 
-Placeholder text
+### Functionality of the program
 
-## Datasets
+- The model is designed to be trained on the [Universal Dependencies](https://universaldependencies.org) data format. Therefore, it can be trained with any language, independently of its script or syntactic structure.   
+- Using the currently accessible data as of 30.11.2025, it achieves the following accuracy when trained on the UD datasets: 
+	- Spanish - 94.3%
+	- Persian - 92.7%
+	- Czech - 91.0%
+	- Urdu - 89.5%
+	- English - 89.1%
+	- German - 88.5%
+	- Slovak - 72.35%
+	- Arabic - 29.1%
+	For comparison, since there are 17 tags in the UD system, the chance of getting the correct one by random chance is about 5.8%.
 
-Placeholder text
+## How to use the program? 
 
-- Czech
-- Slovak
-- English
-- Spanish
-- Persian
-- Arabic
-- German
-- Urdu
-- Gilaki
-
-## Try out the models!
-
-Docker compose can be used in this project to automatically setup the
-marimo server. Just use: 
+Assuming you are on Linux, to simply test the code, clone the repo and run:
 
 ```sh
-docker-compose up --build
+chmod +x 01_download_data.sh
+./01_download_data.sh
+
+python main.py
+# Or python3, but you probably know which one you need to use
 ```
 
-and enter the address indicated into the browser, replacing `0.0.0.0` for `localhost`, 
-or `127.0.0.1`.
+For Windows users, clone the repository and run this in PowerShell: 
 
-If your linux distribution has not added the user to the `docker`
-group, you might need to use root permissions in order to run
-`docker-compose` (`sudo docker-compose` or `doas docker-compose`).
+```sh
+bash 01_download_data.sh
 
+python main.py
+# Or python3, but you probably know which one you need to use
+```
 
+To use the actual functionality, you can follow and adapt the following template:
+
+```python
+# Import the needed functions
+from hmm.dataio import load_treebank  
+from hmm.model import HMMTagger
+
+# Load the training data
+train_sentences = load_treebank("path/to/data/train.conllu")
+
+# Initiate the class
+tagger = HMMTagger()
+
+# Do the actual training
+tagger.train(train_sentences)
+
+# Tag something
+result = tagger.tag("This mode is awesome!")
+
+# And show it!
+print(result)
+```
+
+## Libraries used
+
+- Collections
+- Conllu
+- Numpy
+- Random
+- Re
+- Typing
