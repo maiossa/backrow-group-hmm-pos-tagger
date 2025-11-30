@@ -37,7 +37,15 @@ Assuming you are on Linux, to simply test the code, clone the repo and run:
 
 ```sh
 chmod +x 01_download_data.sh
-./01_download_data.sh
+./scripts/download_data.sh
+- Czech
+- Slovak
+- English
+- Spanish
+- Persian
+- German
+- Urdu
+- Gilaki
 
 python main.py
 # Or python3, but you probably know which one you need to use
@@ -46,7 +54,7 @@ python main.py
 For Windows users, clone the repository and run this in PowerShell: 
 
 ```sh
-bash 01_download_data.sh
+bash scripts/download_data.sh
 
 python main.py
 # Or python3, but you probably know which one you need to use
