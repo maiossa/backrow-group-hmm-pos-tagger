@@ -1,5 +1,5 @@
 from collections import defaultdict, Counter
-from hmm.tokens import START_TOKEN, END_TOKEN, START_TAG, END_TAG, UNK_TOKEN, UNK_ID
+from hmm_fast.tokens import START_TOKEN, END_TOKEN, START_TAG, END_TAG, UNK_TOKEN, UNK_ID
 
 
 class CorpusEncoder:
@@ -9,16 +9,17 @@ class CorpusEncoder:
         min_freq: threshold to replace unfrequent words with UNK
         '''
 
+        # id -> vocab and tagset
+        self.words = [UNK_TOKEN, START_TOKEN, END_TOKEN]
+        self.tags = []
+        
         # indexings
-        self.word2id = defaultdict(lambda: UNK_ID) | {UNK_TOKEN: UNK_ID, START_TOKEN: 1, END_TOKEN: 2}
+        self.word2id = defaultdict(lambda: UNK_ID, {UNK_TOKEN: UNK_ID, START_TOKEN: 1, END_TOKEN: 2})
         self.tag2id = {}
 
         self.vocab = set(self.word2id.keys())
         self.tagset = set()
 
-        # id -> vocab and tagset
-        self.words = list(self.vocab)
-        self.tags = []
 
         self.min_freq = min_freq
         # removed words due to low frequency
@@ -99,11 +100,12 @@ class CorpusEncoder:
 
 
     def decode_tokens(self, token_ids):
-        i2w = self.idx2word
+        i2w = self.words
         return [i2w[i] for i in token_ids]
 
+
     def decode_tags(self, tag_ids):
-        i2t = self.idx2tag
+        i2t = self.tags
         return [i2t[i] for i in tag_ids]
 
 
@@ -115,13 +117,19 @@ if __name__ == '__main__':
 
     enc = CorpusEncoder(min_freq=0)
 
-    enc.fit_transform(sentences[0:20])
+    # enc.fit_transform(sentences[0:20])
     # print(enc.words)
 
-    print(
-        enc.fit_transform(sentences[0:1])
-    )
-    # print(enc.words)
+    sentence = sentences[2:3]
+    tokens, tag_ids = enc.fit_transform(sentence)
+
+
+
+    print(sentence)
+    print()
+    print(' '.join(enc.decode_tokens(tokens)))
+    print()
+    print(' '.join(enc.decode_tags(tag_ids)))
 
 
     

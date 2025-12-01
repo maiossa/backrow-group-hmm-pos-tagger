@@ -65,7 +65,6 @@ def load_treebank(path):
     return fast_parse_conllu(path)
 
 
-
 if __name__ == '__main__':
     import time
     start = time.perf_counter()
