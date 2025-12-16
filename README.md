@@ -27,7 +27,6 @@ The objective of this project was to implement Part of Speech tagging from scrat
 	- English - 89.1%
 	- German - 88.5%
 	- Slovak - 72.35%
-	- Arabic - 29.1%
 
 For comparison, since there are 17 tags in the UD system, the chance of getting the correct one by random chance is about 5.8%.
 
@@ -38,14 +37,6 @@ Assuming you are on Linux, to simply test the code, clone the repo and run:
 ```sh
 chmod +x scripts/download_data.sh
 ./scripts/download_data.sh
-- Czech
-- Slovak
-- English
-- Spanish
-- Persian
-- German
-- Urdu
-- Gilaki
 
 python main.py
 # Or python3, but you probably know which one you need to use
