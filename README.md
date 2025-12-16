@@ -4,7 +4,7 @@
 
 This repository is the result of a project we did as part of our computational syntax course, which is part of the syllabus of the [Master in Language Analysis and Processing on EHU/UPV](https://www.ehu.eus/en/web/master/master-language-analysis-processing). 
 
-The objective of this project was to implement Part of Speech tagging from scratch using a Hidden Markov Model and experiment on said model. The use of high level machine learning libraries was obviously forbidden.
+The objective of this project was to implement Part of Speech tagging from scratch using a Hidden Markov Model and [experiment on said model](https://github.com/maiossa/backrow-group-hmm-pos-tagger/blob/main/hmm_experiments.ipynb). The use of high level machine learning libraries was obviously forbidden.
 
 --------
 
